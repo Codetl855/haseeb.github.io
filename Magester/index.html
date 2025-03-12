@@ -27,6 +27,8 @@
 
     <!-- Main CSS File -->
     <link href="assets/css/main.css" rel="stylesheet">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
 
 
 </head>
@@ -245,33 +247,29 @@
 
                     <div class="col-lg-12">
                         <h3 class="text-center">Please feel free to reach out !</h3>
-                        <form action="forms/contact.php" method="post" class="php-email-form" data-aos="fade-up" data-aos-delay="500">
+                        <form id="contact-form" data-aos="fade-up" data-aos-delay="500">
                             <div class="row gy-4">
-
                                 <div class="col-md-6">
                                     <input type="text" name="name" class="form-control" placeholder="Your Name" required="">
                                 </div>
-
-                                <div class="col-md-6 ">
+                                <div class="col-md-6">
                                     <input type="email" class="form-control" name="email" placeholder="Your Email" required="">
                                 </div>
-
                                 <div class="col-md-12">
                                     <input type="text" class="form-control" name="subject" placeholder="Subject" required="">
                                 </div>
-
                                 <div class="col-md-12">
                                     <textarea class="form-control" name="message" rows="4" placeholder="Message" required=""></textarea>
                                 </div>
 
+                                <!-- reCAPTCHA Widget -->
                                 <div class="col-md-12 text-center">
-                                    <div class="loading">Loading</div>
-                                    <div class="error-message"></div>
-                                    <div class="sent-message">Your message has been sent. Thank you!</div>
-
-                                    <button type="submit">Send Message</button>
+                                    <div class="g-recaptcha" data-sitekey="6LdAJvIqAAAAAJ2Kr2-lTjvbVX-i472WLgmEu7nT"></div>
                                 </div>
 
+                                <div class="col-md-12 text-center">
+                                    <button type="submit">Send Message</button>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -367,6 +365,49 @@
 
     <!-- Main JS File -->
     <script src="assets/js/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            emailjs.init("U9LvVHowHCGJMd7px"); // Replace with your EmailJS Public Key
+
+            document.querySelector("#contact-form").addEventListener("submit", function(event) {
+                event.preventDefault(); // Prevent page refresh
+
+                // Check if reCAPTCHA is completed
+                let recaptchaResponse = grecaptcha.getResponse();
+                if (!recaptchaResponse) {
+                    alert("Please complete the reCAPTCHA verification.");
+                    return;
+                }
+
+                // Collect form data
+                let formData = {
+                    name: document.querySelector('input[name="name"]').value,
+                    email: document.querySelector('input[name="email"]').value,
+                    subject: document.querySelector('input[name="subject"]').value,
+                    message: document.querySelector('textarea[name="message"]').value,
+                    "g-recaptcha-response": recaptchaResponse // Send reCAPTCHA token
+                };
+
+                // Send email via EmailJS
+                emailjs.send("service_f669k7l", "template_iya0f4j", formData)
+                    .then(function(response) {
+                        console.log("Email sent successfully!", response);
+                        document.querySelector(".sent-message").style.display = "block";
+                    })
+                    .catch(function(error) {
+                        console.error("Error sending email:", error);
+                        document.querySelector(".error-message").textContent = "Failed to send email.";
+                        document.querySelector(".error-message").style.display = "block";
+                    });
+
+                // Reset reCAPTCHA after submission
+                grecaptcha.reset();
+            });
+        });
+    </script>
+
 
 </body>
 
